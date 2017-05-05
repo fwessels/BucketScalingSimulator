@@ -133,9 +133,8 @@ func CreateObject(bucket string, size int) {
 			ids := bucketInfo.addSlotToBucket()
 			fmt.Println(bucket, "  grow:", "slots", ids)
 		}
-		slot := bucketInfo.chooseSlot(/*size*/)
-		if slot.avail - size < 0 {
-			// fmt.Println("Out of available space")
+		slot := bucketInfo.chooseSlot( /*size*/ )
+		if slot.avail-size < 0 {
 			panic("Out of available space")
 		}
 		slot.used += size
