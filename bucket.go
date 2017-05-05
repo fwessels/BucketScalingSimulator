@@ -51,10 +51,12 @@ func (bi *BucketInfo) addSlotToBucket() []int {
 			ids = append(ids, slot.id)
 		}
 
-		slot := getLeastUsedSlot(ids)
-		slot.buckets += 1
+		slot, ok := getLeastUsedSlot(ids)
+		if ok {
+			slot.buckets += 1
 
-		bi.slots = append(bi.slots, slot)
+			bi.slots = append(bi.slots, slot)
+		}
 	}
 
 	ids = ids[:0]
@@ -95,19 +97,24 @@ func (bi BucketInfo) chooseSlot() *Slot {
 }
 
 // CreateBucket
-func CreateBucket(name string) {
+func CreateBucket(name string) error {
 
 	if _, ok := Buckets[name]; ok {
-		return // already exists, return
+		return nil // already exists, return
 	}
 
-	slot := getLeastUsedSlot([]int{})
+	slot, ok := getLeastUsedSlot([]int{})
+	if !ok {
+		return errors.New("No space available to create bucket")
+	}
+
 	slot.buckets += 1
 	fmt.Println(name, "create:", "slot ", []int{slot.id})
 
 	bucketInfo := BucketInfo{[]*Slot{}}
 	bucketInfo.slots = append(bucketInfo.slots, slot)
 	Buckets[name] = &bucketInfo
+	return nil
 }
 
 // CreateObject

@@ -63,9 +63,11 @@ func findId(id int, ids []int) bool {
 	return false
 }
 
+const slotMinAvailablePct = 5
+
 // getLeastUsedSlot returns the slot that
 // is used the least (has most free space)
-func getLeastUsedSlot(existingIds []int) *Slot {
+func getLeastUsedSlot(existingIds []int) (*Slot, bool) {
 
 	// make copy for various sort operations below
 	slots := make([]Slot, 0, len(Slots)-len(existingIds))
@@ -78,6 +80,10 @@ func getLeastUsedSlot(existingIds []int) *Slot {
 
 	// sort slots on available size
 	sort.Sort(bySlotMostAvail(slots))
+
+	if float64(100 * slots[0].avail) / float64(slots[0].used + slots[0].avail) < slotMinAvailablePct {
+		return nil, false
+	}
 
 	maxAvail := slots[0].avail
 
@@ -97,10 +103,10 @@ func getLeastUsedSlot(existingIds []int) *Slot {
 	// find and return slot corresponding to first entry in sorted aray
 	for i, s := range Slots {
 		if s.id == slots[0].id {
-			return &Slots[i]
+			return &Slots[i], true
 		}
 	}
-	return &Slots[0]
+	return &Slots[0], true
 }
 
 // bySlotMostAvail is a collection satisfying sort.Interface.
