@@ -1,6 +1,7 @@
 package BucketScalingSimulator
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 )
@@ -15,12 +16,18 @@ func init() {
 	Buckets = make(map[string]*BucketInfo)
 }
 
-const bucketGrowWatermark = 0.75
+const bucketGrowWatermarkPct = 75 // Usage percentage in order to add a new slot
+const bucketMaxSlotLimit = 10     // Maximum number of slots that a bucket can have
 
 func (bi BucketInfo) needToGrowBucket() bool {
 
 	if len(bi.slots) == getTotalSlots() {
 		return false // Cannot grow any further
+	}
+
+	// TODO: Decide to implement a maximum limit to the number of slots?
+	if len(bi.slots) >= bucketMaxSlotLimit {
+		return false
 	}
 
 	bucketUsed := 0
@@ -31,10 +38,10 @@ func (bi BucketInfo) needToGrowBucket() bool {
 		bucketAvail += slot.avail
 	}
 
-	filledPct := float64(bucketUsed) / float64(bucketUsed + bucketAvail)
+	filledPct := float64(100*bucketUsed) / float64(bucketUsed+bucketAvail)
 	//fmt.Println("filled", filledPct)
 
-	if filledPct >= bucketGrowWatermark {
+	if filledPct >= bucketGrowWatermarkPct {
 		return true
 	}
 
